@@ -120,15 +120,23 @@ function procesarQR(textoQR) {
   if (textoQR === ultimoQR) return;
   ultimoQR = textoQR;
 
-  document.getElementById("sonido").play().catch(function(){});
-  document.getElementById("mensaje").textContent = "✅ Asistencia registrada";
+  document.getElementById("mensaje").textContent = "Registrando asistencia...";
 
-  window.open(textoQR, "_blank");
+  fetch(textoQR, { mode: "no-cors" })
+    .then(function() {
+      document.getElementById("sonido").play().catch(function(){});
+      document.getElementById("mensaje").textContent = "✅ Asistencia registrada";
 
-  setTimeout(function() {
-    ultimoQR = "";
-    document.getElementById("mensaje").textContent = "Listo para escanear otro alumno.";
-  }, 5000);
+      setTimeout(function() {
+        ultimoQR = "";
+        document.getElementById("mensaje").textContent = "Listo para escanear otro alumno.";
+      }, 5000);
+    })
+    .catch(function() {
+      document.getElementById("mensaje").textContent = "No se pudo registrar. Abriendo enlace...";
+      window.open(textoQR, "_blank");
+      ultimoQR = "";
+    });
 }
 </script>
 
