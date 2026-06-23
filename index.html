@@ -133,11 +133,11 @@ function procesarQR(textoQR) {
       }, 5000);
     })
     .catch(function() {
-      document.getElementById("mensaje").textContent = "No se pudo registrar. Abriendo enlace...";
-      window.open(textoQR, "_blank");
+      document.getElementById("mensaje").textContent = "Error al registrar asistencia";
       ultimoQR = "";
     });
 }
+          
 </script>
 
 </body>
