@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Escáner QR Asistencia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body{
+      font-family:Arial;
+      background:#f2f2f2;
+      text-align:center;
+      padding:20px;
+    }
+
+    .caja{
+      max-width:500px;
+      margin:auto;
+      background:white;
+      padding:25px;
+      border-radius:12px;
+      box-shadow:0 4px 15px rgba(0,0,0,.15);
+    }
+
+    button{
+      padding:12px 20px;
+      margin:8px;
+      font-size:16px;
+      border:none;
+      border-radius:8px;
+      background:#1976d2;
+      color:white;
+      cursor:pointer;
+    }
+
+    .rojo{background:#d32f2f;}
+
+    #reader{
+      width:320px;
+      margin:20px auto;
+    }
+
+    #mensaje{
+      margin-top:15px;
+      font-weight:bold;
+      color:#2e7d32;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="caja">
+  <h1>📸 Escáner QR</h1>
+  <p>El alumno debe mostrar su QR frente a la cámara.</p>
+
+  <button onclick="iniciarEscaner()">Abrir cámara</button>
+  <button class="rojo" onclick="detenerEscaner()">Cerrar cámara</button>
+
+  <div id="reader"></div>
+  <p id="mensaje"></p>
+</div>
+
+<audio id="sonido">
+  <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
+</audio>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+let escanerQR;
+let escaneando = false;
+let ultimoQR = "";
+
+function iniciarEscaner() {
+  if (escaneando) return;
+
+  escanerQR = new Html5Qrcode("reader");
+
+  Html5Qrcode.getCameras().then(function(cameras) {
+    if (!cameras || cameras.length === 0) {
+      alert("No se encontró cámara.");
+      return;
+    }
+
+    let cameraId = cameras[0].id;
+
+    escanerQR.start(
+      cameraId,
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      function(decodedText) {
+        procesarQR(decodedText);
+      }
+    ).then(function() {
+      escaneando = true;
+      document.getElementById("mensaje").textContent = "Cámara abierta. Escaneá un QR.";
+    }).catch(function(error) {
+      alert("No se pudo abrir la cámara: " + error);
+    });
+
+  }).catch(function(error) {
+    alert("Error al obtener cámara: " + error);
+  });
+}
+
+function detenerEscaner() {
+  if (escanerQR && escaneando) {
+    escanerQR.stop().then(function() {
+      escaneando = false;
+      document.getElementById("reader").innerHTML = "";
+      document.getElementById("mensaje").textContent = "Cámara cerrada.";
+    });
+  }
+}
+
+function procesarQR(textoQR) {
+  if (textoQR === ultimoQR) return;
+  ultimoQR = textoQR;
+
+  document.getElementById("sonido").play().catch(function(){});
+  document.getElementById("mensaje").textContent = "✅ Asistencia registrada";
+
+  window.open(textoQR, "_blank");
+
+  setTimeout(function() {
+    ultimoQR = "";
+    document.getElementById("mensaje").textContent = "Listo para escanear otro alumno.";
+  }, 5000);
+}
+</script>
+
+</body>
+</html>
